@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from studentsapp.models import student
 from studentsapp.forms import PostForm
+from django.http import HttpResponse
+import datetime
 
 def listone(request): 
 	try: 
@@ -14,8 +16,19 @@ def listall(request):
     return render(request, "listall.html", locals())
 	
 def index(request):  
-    students = student.objects.all().order_by('id')  #讀取資料表, 依 id 遞增排序
-    return render(request, "index.html", locals())		
+	students = student.objects.all().order_by('id')  #讀取資料表, 依 id 遞增排序
+	if "counter" in request.COOKIES:
+		counter=int(request.COOKIES["counter"])
+		counter+=1
+	else:
+		counter=1
+	response = HttpResponse('今日瀏覽次數：' + str(counter))		
+	tomorrow = datetime.datetime.now() + datetime.timedelta(days = 1)
+	tomorrow = datetime.datetime.replace(tomorrow, hour=0, minute=0, second=0)
+	expires = datetime.datetime.strftime(tomorrow, "%a, %d-%b-%Y %H:%M:%S GMT") 
+	response.set_cookie("counter",counter,expires=expires)
+	#return response
+	return render(request, "index.html", locals())			
 
 def post(request):
 	if request.method == "POST":		#如果是以POST方式才處理
@@ -122,3 +135,11 @@ def edit2(request,id=None,mode=None):
 def postform(request):  #新增資料，資料必須驗證
 	postform = PostForm()  #建立PostForm物件
 	return render(request, "postform.html", locals())		  
+
+
+
+
+
+
+
+		
